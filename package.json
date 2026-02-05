@@ -1,0 +1,44 @@
+{
+  "name": "@webxio/form-shield",
+  "version": "0.1.3",
+  "type": "module",
+  "description": "Layered spam protection for contact forms utilizing Cap.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "pnpm build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebXIO/Form-Shield.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "keywords": [
+    "spam",
+    "protection",
+    "captcha",
+    "capjs",
+    "honeypot",
+    "form",
+    "security"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@cap.js/server": ">=0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
