@@ -125,7 +125,7 @@ export class FormShield {
   /**
    * Check only the content filter layer
    */
-  checkContent(input: { name: string; email: string; message: string }): SpamDetectionResult {
+  checkContent(input: { name?: string; email?: string; message?: string }): SpamDetectionResult {
     return detectSpam(input, this.config.contentFilter);
   }
 

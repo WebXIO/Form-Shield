@@ -12,7 +12,7 @@ const DEFAULT_SPAM_PATTERNS = [
  * @returns SpamDetectionResult with isSpam flag and reasons
  */
 export function detectSpam(
-  input: { name: string; email: string; message: string },
+  input: { name?: string; email?: string; message?: string },
   config?: FormShieldConfig['contentFilter']
 ): SpamDetectionResult {
   const reasons: string[] = [];
@@ -23,43 +23,51 @@ export function detectSpam(
   const allowDigitsInName = config?.allowDigitsInName ?? false;
   const maxNamePunctuation = config?.maxNamePunctuation ?? 2;
 
-  // Check for random string patterns in message (low vowel ratio)
-  if (input.message.length > 5) {
+  // Check for random string patterns in message (low vowel ratio) - only if message provided
+  if (input.message && input.message.length > 5) {
     const vowelRatio = (input.message.match(/[aeiouAEIOU]/g) || []).length / input.message.length;
     if (vowelRatio < minVowelRatio) {
       reasons.push(`Message has suspicious low vowel ratio (${(vowelRatio * 100).toFixed(1)}%)`);
     }
   }
 
-  // Check for consecutive consonants (random strings often have long consonant clusters)
-  const consonantPattern = new RegExp(`[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{${maxConsonantCluster + 1},}`, 'g');
-  const consonantCluster = input.message.match(consonantPattern);
-  if (consonantCluster) {
-    reasons.push(`Message contains suspicious consonant clusters: ${consonantCluster.join(", ")}`);
+  // Check for consecutive consonants (random strings often have long consonant clusters) - only if message provided
+  if (input.message) {
+    const consonantPattern = new RegExp(`[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{${maxConsonantCluster + 1},}`, 'g');
+    const consonantCluster = input.message.match(consonantPattern);
+    if (consonantCluster) {
+      reasons.push(`Message contains suspicious consonant clusters: ${consonantCluster.join(", ")}`);
+    }
   }
 
-  // Check for gibberish name (contains digits or excessive punctuation)
-  if (!allowDigitsInName && /\d/.test(input.name)) {
-    reasons.push("Name contains digits");
-  }
-  
-  const punctuationCount = (input.name.match(/[.\-_]/g) || []).length;
-  if (punctuationCount > maxNamePunctuation) {
-    reasons.push(`Name has excessive punctuation (${punctuationCount} occurrences)`);
-  }
-
-  // Check for excessive URLs in message
-  const urlCount = (input.message.match(/https?:\/\/[^\s]+/gi) || []).length;
-  if (urlCount > maxUrls) {
-    reasons.push(`Message contains too many URLs (${urlCount})`);
+  // Check for gibberish name (contains digits or excessive punctuation) - only if name provided
+  if (input.name) {
+    if (!allowDigitsInName && /\d/.test(input.name)) {
+      reasons.push("Name contains digits");
+    }
+    
+    const punctuationCount = (input.name.match(/[.\-_]/g) || []).length;
+    if (punctuationCount > maxNamePunctuation) {
+      reasons.push(`Name has excessive punctuation (${punctuationCount} occurrences)`);
+    }
   }
 
-  // Check for common spam patterns
-  const patterns = [...DEFAULT_SPAM_PATTERNS, ...(config?.customPatterns || [])];
-  for (const pattern of patterns) {
-    if (pattern.test(input.message)) {
-      reasons.push("Message contains known spam keywords");
-      break;
+  // Check for excessive URLs in message - only if message provided
+  if (input.message) {
+    const urlCount = (input.message.match(/https?:\/\/[^\s]+/gi) || []).length;
+    if (urlCount > maxUrls) {
+      reasons.push(`Message contains too many URLs (${urlCount})`);
+    }
+  }
+
+  // Check for common spam patterns - only if message provided
+  if (input.message) {
+    const patterns = [...DEFAULT_SPAM_PATTERNS, ...(config?.customPatterns || [])];
+    for (const pattern of patterns) {
+      if (pattern.test(input.message)) {
+        reasons.push("Message contains known spam keywords");
+        break;
+      }
     }
   }
 
@@ -73,14 +81,14 @@ export function detectSpam(
  */
 export function logSpamDetection(
   result: SpamDetectionResult,
-  input: { name: string; email: string; message: string }
+  input: { name?: string; email?: string; message?: string }
 ): void {
   if (result.isSpam) {
-    const preview = input.message.length > 100 
+    const preview = input.message && input.message.length > 100 
       ? `${input.message.substring(0, 100)}...` 
-      : input.message;
+      : input.message || 'N/A';
     console.log(
-      `[SPAM] Content filter triggered | Email: ${input.email} | Name: ${input.name} | ` +
+      `[SPAM] Content filter triggered | Email: ${input.email || 'N/A'} | Name: ${input.name || 'N/A'} | ` +
       `Reasons: ${result.reasons.join("; ")} | Message preview: ${preview}`
     );
   }

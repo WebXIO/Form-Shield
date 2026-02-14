@@ -20,9 +20,9 @@ export interface FormShieldConfig {
 }
 
 export interface ContactFormInput {
-  name: string;
-  email: string;
-  message: string;
+  name?: string;
+  email?: string;
+  message?: string;
   capToken: string;
   [honeypotField: string]: string | undefined;
 }
